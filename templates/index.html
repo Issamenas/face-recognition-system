@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition System</title>
+    <link rel="stylesheet" href="static\\styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Face Recognition System</h1>
+        <form id="upload-form" enctype="multipart/form-data">
+            <input type="file" id="file-input" accept="image/*" required>
+            <button type="submit">Recognize Face</button>
+        </form>
+        <div id="result" class="hidden">
+            <h2>Result:</h2>
+            <p id="match"></p>
+            <p id="confidence"></p>
+        </div>
+        <div id="error" class="hidden">
+            <p id="error-message"></p>
+        </div>
+    </div>
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('file', document.getElementById('file-input').files[0]);
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.error) {
+                    document.getElementById('error').classList.remove('hidden');
+                    document.getElementById('error-message').textContent = data.error;
+                    document.getElementById('result').classList.add('hidden');
+                } else {
+                    document.getElementById('result').classList.remove('hidden');
+                    document.getElementById('match').textContent = `Closest match: ${data.match}`;
+                    document.getElementById('confidence').textContent = `Confidence: ${(1 - data.distance).toFixed(2)}`;
+                    document.getElementById('error').classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
